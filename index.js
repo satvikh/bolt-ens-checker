@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { Network, Alchemy } from 'alchemy-sdk';
 import fs from "fs";
 import dotenv from "dotenv";
-import { isENSExpired } from "./boltensutils.js";
+import { isENSSnipeable } from "./boltensutils.js";
 
 
 
@@ -21,29 +21,35 @@ for (let i = 0; i <= 9999; i++) {
 }
 
 const domains = tempDomains;
+
+
 (async () => {
-    const result= await isENSExpired("9999.eth");
-    console.log(result);
+
+
+    for (const domain of domains) {
+        const result = await isENSSnipeable(domain);
+
+        if (result.error) {
+            continue;
+        }
+
+        if (result.isExpired) {
+            console.log(`Domain expired: ${result.domain}`);
+            freeDomains.push(result.domain);
+        }
+    }
+
+    console.log("Free domains:", freeDomains);
 })();
 
+
+
+
+
+
+
+//tester
 // (async () => {
-
-
-//     for (const domain of domains) {
-//         const result = await isENSExpired(domain);
-
-//         if (result.error) {
-//             continue;
-//         }
-
-//         if (result.isExpired) {
-//             console.log(`Domain expired: ${result.domain}`);
-//             freeDomains.push(result.domain);
-//         }
-//     }
-
-//     console.log("Free domains:", freeDomains);
+//     const result= await isENSSnipeable("9999.eth");
+//     console.log(result);
 // })();
-
-
-

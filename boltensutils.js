@@ -48,13 +48,17 @@ const utf8ToKeccak = (utf8String) => {
 
 
 // Async function to check expiration
-export async function isENSExpired(domain) {
+export async function isENSSnipeable(domain) {
     try {
         
         const today = new Date();
         const label = domain.endsWith('.eth') ? domain.slice(0, -4) : domain;
         const keccakLabel= utf8ToKeccak(label);
-        const expirationDate = await registrar.nameExpires(keccakLabel);
+        const expirationTimestamp = await registrar.nameExpires(keccakLabel);
+        const expirationDate = new Date(Number(expirationTimestamp) * 1000);
+        const graceEnd = new Date(expirationDate);
+        graceEnd.setDate(graceEnd.getDate() + 90);
+        const snipeable= today > graceEnd;
         // const expired = expirationDate < today;
         // Return the results
         return {
@@ -65,6 +69,8 @@ export async function isENSExpired(domain) {
             // processedLabel,
             today,
             expirationDate,
+            graceEnd,
+            isSnipeable: snipeable ? "Y" : "N",
             //processedLabel,
             // expired
         };
