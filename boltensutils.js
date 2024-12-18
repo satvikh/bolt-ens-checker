@@ -17,6 +17,8 @@ const settings = {
 
 const alchemy = new Alchemy(settings);
 
+const provider =new ethers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/" + settings.apiKey);
+
 
 
 // ENS Registrar contract address and ABI
@@ -33,12 +35,11 @@ const ENS_REGISTRAR_ABI = [
     }
 ];
 
-
-const registrar = new ethers.Contract(ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_ABI, alchemy);
+const registrar = new ethers.Contract(ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_ABI, provider);
 
 // Function to convert a UTF-8 string to a Keccak-256 hash
 const utf8ToKeccak = (utf8String) => {
-    console.log(ethers);
+    // console.log(ethers);
     
     const bytes = ethers.toUtf8Bytes(utf8String); // Convert UTF-8 string to bytes
     const keccakHash = ethers.keccak256(bytes);  // Compute Keccak-256 hash
@@ -52,8 +53,8 @@ export async function isENSExpired(domain) {
         
         const today = new Date();
         const label = domain.endsWith('.eth') ? domain.slice(0, -4) : domain;
-        const processedLabel= utf8ToKeccak(label);
-        // const expirationDate = nameExpires(processedLabel);
+        const keccakLabel= utf8ToKeccak(label);
+        const expirationDate = await registrar.nameExpires(keccakLabel);
         // const expired = expirationDate < today;
         // Return the results
         return {
@@ -61,10 +62,10 @@ export async function isENSExpired(domain) {
             // isExpired,
             // expirationDate: expirationDate.toISOString(),
             ////Test Functions
-            label,
+            // processedLabel,
             today,
-            // expirationDate,
-            processedLabel,
+            expirationDate,
+            //processedLabel,
             // expired
         };
     } catch (error) {
