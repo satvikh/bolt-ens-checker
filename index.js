@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { Network, Alchemy } from 'alchemy-sdk';
 import fs from "fs";
 import dotenv from "dotenv";
-import { isENSExpired } from "./utils.js";
+import { isENSExpired } from "./boltensutils.js";
 
 
 

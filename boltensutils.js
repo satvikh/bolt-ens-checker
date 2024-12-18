@@ -36,13 +36,23 @@ const ENS_REGISTRAR_ABI = [
 
 const registrar = new ethers.Contract(ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_ABI, alchemy);
 
+// Function to convert a UTF-8 string to a Keccak-256 hash
+const utf8ToKeccak = (utf8String) => {
+    console.log(ethers);
+    
+    const bytes = ethers.toUtf8Bytes(utf8String); // Convert UTF-8 string to bytes
+    const keccakHash = ethers.keccak256(bytes);  // Compute Keccak-256 hash
+    return keccakHash;
+};
+
+
 // Async function to check expiration
 export async function isENSExpired(domain) {
     try {
         
         const today = new Date();
         const label = domain.endsWith('.eth') ? domain.slice(0, -4) : domain;
-        const processedLabel= keccak256(label);
+        const processedLabel= utf8ToKeccak(label);
         // const expirationDate = nameExpires(processedLabel);
         // const expired = expirationDate < today;
         // Return the results
