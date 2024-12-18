@@ -3,7 +3,7 @@ import { Network, Alchemy } from 'alchemy-sdk';
 import fs from "fs";
 import dotenv from "dotenv";
 import fetch from 'node-fetch'
-
+import {config} from "./config.js";
 
 // Load environment variables from .env file
 dotenv.config(); 
@@ -36,6 +36,33 @@ const ENS_REGISTRAR_ABI = [
 ];
 
 const registrar = new ethers.Contract(ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_ABI, provider);
+const outputFile = config.outputFile;
+
+
+
+
+// Function to save data to the JSON file
+export const saveDataToFile = (data) => {
+    fs.writeFileSync(outputFile, JSON.stringify(data, null, 2));
+};
+
+
+
+
+// Function to load existing data from the JSON file
+export function loadExistingData() {
+    try {
+        const data = fs.readFileSync("domains.json", "utf-8");
+        return JSON.parse(data) || []; // Return an empty array if the file contains invalid JSON
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            // File doesn't exist, return an empty array
+            return [];
+        }
+        throw error; // Re-throw other errors
+    }
+}
+
 
 // Function to convert a UTF-8 string to a Keccak-256 hash
 const utf8ToKeccak = (utf8String) => {
@@ -91,49 +118,67 @@ export async function batchIsENSSnipeable(domains) {
 
         const today = new Date();
 
-        // Construct batch requests
-        const requests = domains.map((domain) => {
-            const label = domain.endsWith(".eth") ? domain.slice(0, -4) : domain;
-            const keccakLabel = utf8ToKeccak(label);
-            return { domain, keccakLabel };
-        });
-        console.log(requests);
-        // Fetch expiration timestamps in parallel
-        const responses = await Promise.all(
-            requests.map(async (req) => {
-                try {
-                    const expirationTimestamp = await registrar.nameExpires(req.keccakLabel);
-                    return { domain: req.domain, expirationTimestamp };
-                } catch (error) {
-                    console.error(`Error fetching expiration for ${req.domain}:`, error);
-                    return { domain: req.domain, error: "Failed to fetch expiration" };
+        const processBatch = async (batch) => {
+            // Construct batch requests
+            const requests = batch.map((domain) => {
+                const label = domain.endsWith(".eth") ? domain.slice(0, -4) : domain;
+                const keccakLabel = utf8ToKeccak(label);
+                return { domain, keccakLabel };
+            });
+
+            // console.log(requests);
+
+            // Fetch expiration timestamps in parallel
+            const responses = await Promise.all(
+                requests.map(async (req) => {
+                    try {
+                        const expirationTimestamp = await registrar.nameExpires(req.keccakLabel);
+                        return { domain: req.domain, expirationTimestamp };
+                    } catch (error) {
+                        console.error(`Error fetching expiration for ${req.domain}:`, error);
+                        return { domain: req.domain, error: "Failed to fetch expiration" };
+                    }
+                })
+            );
+
+            // Process responses
+            return responses.map((res) => {
+                if (res.error) {
+                    return { domain: res.domain, error: res.error };
                 }
-            })
-        );
 
-        // Process responses
-        const results = responses.map((res) => {
-            if (res.error) {
-                return { domain: res.domain, error: res.error };
-            }
+                try {
+                    const expirationDate = new Date(Number(res.expirationTimestamp) * 1000);
+                    const graceEnd = new Date(expirationDate);
+                    graceEnd.setDate(graceEnd.getDate() + 90);
+                    const snipeable = today > graceEnd;
 
-            try {
-                const expirationDate = new Date(Number(res.expirationTimestamp) * 1000);
-                const graceEnd = new Date(expirationDate);
-                graceEnd.setDate(graceEnd.getDate() + 90);
-                const snipeable = today > graceEnd;
+                    return {
+                        domain: res.domain,
+                        expirationDate,
+                        graceEnd,
+                        snipeable,
+                    };
+                } catch (error) {
+                    console.error(`Error processing response for ${res.domain}:`, error);
+                    return { domain: res.domain, error: "Processing error" };
+                }
+            });
+        };
 
-                return {
-                    domain: res.domain,
-                    expirationDate,
-                    graceEnd,
-                    snipeable,
-                };
-            } catch (error) {
-                console.error(`Error processing response for ${res.domain}:`, error);
-                return { domain: res.domain, error: "Processing error" };
-            }
-        });
+        // Split domains into batches of 900
+        const batchSize = 900;
+        const batches = [];
+        for (let i = 0; i < domains.length; i += batchSize) {
+            batches.push(domains.slice(i, i + batchSize));
+        }
+
+        // Process each batch sequentially
+        let results = [];
+        for (const batch of batches) {
+            const batchResults = await processBatch(batch);
+            results = results.concat(batchResults);
+        }
 
         return results;
     } catch (error) {
