@@ -170,7 +170,7 @@ export async function batchIsENSSnipeable(domains) {
         };
 
         // Split domains into batches of 900
-        const batchSize = 900;
+        const batchSize = 50;
         const batches = [];
         for (let i = 0; i < domains.length; i += batchSize) {
             batches.push(domains.slice(i, i + batchSize));
