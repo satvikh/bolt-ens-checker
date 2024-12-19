@@ -57,7 +57,8 @@ const tester = [
                 // console.log(`Grace end: ${domain.graceEnd.toISOString()}`);
                 existingData.push({
                     domain: domain.domain,
-                    graceEnd: domain.graceEnd.toISOString()
+                    graceEnd: domain.graceEnd.toISOString(),
+                    price: domain.price
                 });
             });
 

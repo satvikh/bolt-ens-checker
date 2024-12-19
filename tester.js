@@ -1,26 +1,26 @@
-import { ethers } from "ethers";
-import { Network, Alchemy } from 'alchemy-sdk';
-import fs from "fs";
-import dotenv from "dotenv";
-import { isENSSnipeable, batchIsENSSnipeable } from "./boltensutils.js";
-import config from "./config.js";
+// import { ethers } from "ethers";
+// import { Network, Alchemy } from 'alchemy-sdk';
+// import fs from "fs";
+// import dotenv from "dotenv";
+// import { isENSSnipeable, batchIsENSSnipeable } from "./boltensutils.js";
+// import config from "./config.js";
 
 
-//domains = JSON.parse(fs.readFileSync("domains.json"))
+// //domains = JSON.parse(fs.readFileSync("domains.json"))
 
-const tempDomains = [];
-const freeDomains = [];
-
-
+// const tempDomains = [];
+// const freeDomains = [];
 
 
 
-for (let i = 0; i <= 9999; i++) {
-    const temp= i.toString().padStart(4, '0')+ ".eth";
-    tempDomains.push(temp);
-}
 
-const domains = tempDomains;
+
+// for (let i = 0; i <= 9999; i++) {
+//     const temp= i.toString().padStart(4, '0')+ ".eth";
+//     tempDomains.push(temp);
+// }
+
+// const domains = tempDomains;
 
 
 // (async () => {
@@ -58,8 +58,8 @@ const domains = tempDomains;
 // })();
 
 //batchTester
-(async () => {
-    const domains = ["9999.eth", "example.eth", "test.eth"];
-    const results = await batchIsENSSnipeable(domains);
-    console.log(results);
-})();
+// (async () => {
+//     const domains = ["9999.eth", "example.eth", "test.eth"];
+//     const results = await batchIsENSSnipeable(domains);
+//     console.log(results);
+// })();

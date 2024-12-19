@@ -4,6 +4,7 @@ import fs from "fs";
 import dotenv from "dotenv";
 import fetch from 'node-fetch'
 import {config} from "./config.js";
+import { start } from "repl";
 
 // Load environment variables from .env file
 dotenv.config(); 
@@ -97,6 +98,7 @@ export async function isENSSnipeable(domain) {
             expirationDate,
             graceEnd,
             snipeable,
+            price: (netRegPrice(label,graceEnd)),
             //processedLabel,
             // expired
         };
@@ -158,6 +160,7 @@ export async function batchIsENSSnipeable(domains) {
                         expirationDate,
                         graceEnd,
                         snipeable,
+                        price: (netRegPrice(res.domain,graceEnd))
                     };
                 } catch (error) {
                     console.error(`Error processing response for ${res.domain}:`, error);
@@ -186,3 +189,45 @@ export async function batchIsENSSnipeable(domains) {
         throw new Error("Failed to process ENS domains.");
     }
 }
+    
+
+
+export function premiumPrice(graceEnd) {
+    const startprice=100000000 //start price is 100 million dollars
+    const premium=startprice*(0.5)**graceEnd;
+
+    return premium;
+
+}
+
+export function regPrice(domain, days=30){
+    const length = domain.length-4;
+    let price=0;
+    switch (true) {
+        case length >= 5:
+            price = 5;
+            break;
+        case length === 4:
+            price = 160;
+            break;
+        case length <= 3:
+            price = 640;
+            break;
+
+    }
+    return price/12;
+}
+
+
+export function netRegPrice(domain, graceEnd) {
+    const netprice=premiumPrice(graceEnd)+regPrice(domain);
+    return netprice;
+}
+
+
+// convertToEth = async (usd) => {
+//     const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd`);
+//     const data = await response.json();
+//     const ethPrice = data.ethereum.usd;
+//     return usd / ethPrice;
+// }
