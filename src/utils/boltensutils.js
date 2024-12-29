@@ -2,8 +2,8 @@ import { ethers, keccak256 } from "ethers";
 import { Network, Alchemy } from 'alchemy-sdk';
 import fs from "fs";
 import dotenv from "dotenv";
-import fetch from 'node-fetch'
-import {config} from "./config.js";
+import fetch from 'node-fetch';
+import { config } from '../../config/config.js';
 import { start } from "repl";
 import { parse } from "csv-parse";
 

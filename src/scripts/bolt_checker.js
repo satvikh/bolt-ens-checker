@@ -2,8 +2,8 @@ import { ethers } from "ethers";
 import { Network, Alchemy } from 'alchemy-sdk';
 import fs from "fs";
 import dotenv from "dotenv";
-import { isENSSnipeable, batchIsENSSnipeable, saveDataToFile, loadExistingData, getCsvColumnValues } from "./boltensutils.js";
-import { config } from "./config.js";
+import { loadExistingData, netRegPrice } from '../utils/boltensutils.js';
+import { config } from '../../config/config.js';
 
 const tester = [
     'example1',

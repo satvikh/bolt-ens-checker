@@ -1,6 +1,6 @@
 import fs from 'fs';
-import {loadExistingData, netRegPrice} from './boltensutils.js';
-import {config} from './config.js';
+import { loadExistingData, netRegPrice } from '../utils/boltensutils.js';
+import { config } from '../../config/config.js';
 
   
   // Load the JSON file
