@@ -78,10 +78,6 @@ These features provide a high level of precision and reliability for acquiring p
 
 Contributions are welcome! Feel free to submit issues or pull requests to enhance the functionality of this tool.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/satvikh/bolt-ens-checker/blob/main/LICENSE) file for details.
-
 ## Acknowledgments
 
 Special thanks to the Ethereum Name Service community for their ongoing development and support.
