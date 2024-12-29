@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import fetch from 'node-fetch'
 import {config} from "./config.js";
 import { start } from "repl";
+import { parse } from "csv-parse";
 
 // Load environment variables from .env file
 dotenv.config(); 
@@ -39,6 +40,29 @@ const ENS_REGISTRAR_ABI = [
 const registrar = new ethers.Contract(ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_ABI, provider);
 const outputFile = config.outputFile;
 
+// Function to get column values from a CSV file
+export const getCsvColumnValues = (filePath, columnName) => {
+    return new Promise((resolve, reject) => {
+        const values = [];
+
+        // Create a readable stream for the CSV file
+        const parser = fs.createReadStream(filePath).pipe(
+            parse({
+                columns: true, // Parse header row
+                trim: true,    // Trim whitespace
+            })
+        );
+
+        parser.on('data', (row) => {
+            if (row[columnName] !== undefined) {
+                values.push(row[columnName]);
+            }
+        });
+
+        parser.on('end', () => resolve(values));
+        parser.on('error', (error) => reject(error));
+    });
+};
 
 
 
@@ -53,7 +77,7 @@ export const saveDataToFile = (data) => {
 // Function to load existing data from the JSON file
 export function loadExistingData() {
     try {
-        const data = fs.readFileSync("domains.json", "utf-8");
+        const data = fs.readFileSync(config.outputFile, "utf-8");
         return JSON.parse(data) || []; // Return an empty array if the file contains invalid JSON
     } catch (error) {
         if (error.code === 'ENOENT') {
@@ -120,6 +144,9 @@ export async function batchIsENSSnipeable(domains) {
 
         const today = new Date();
 
+        // Utility to introduce a delay
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
         const processBatch = async (batch) => {
             // Construct batch requests
             const requests = batch.map((domain) => {
@@ -127,8 +154,6 @@ export async function batchIsENSSnipeable(domains) {
                 const keccakLabel = utf8ToKeccak(label);
                 return { domain, keccakLabel };
             });
-
-            // console.log(requests);
 
             // Fetch expiration timestamps in parallel
             const responses = await Promise.all(
@@ -160,7 +185,7 @@ export async function batchIsENSSnipeable(domains) {
                         expirationDate,
                         graceEnd,
                         snipeable,
-                        price: (netRegPrice(res.domain,graceEnd))
+                        price: netRegPrice(res.domain, graceEnd),
                     };
                 } catch (error) {
                     console.error(`Error processing response for ${res.domain}:`, error);
@@ -169,18 +194,21 @@ export async function batchIsENSSnipeable(domains) {
             });
         };
 
-        // Split domains into batches of 900
-        const batchSize = 50;
+        // Split domains into batches of x
+        const batchSize = config.batchSize;
         const batches = [];
         for (let i = 0; i < domains.length; i += batchSize) {
             batches.push(domains.slice(i, i + batchSize));
         }
 
-        // Process each batch sequentially
+        // Process each batch sequentially with a 1-second timeout
         let results = [];
         for (const batch of batches) {
             const batchResults = await processBatch(batch);
             results = results.concat(batchResults);
+
+            // Introduce a 1-second timeout
+            await delay(1000);
         }
 
         return results;
@@ -189,15 +217,35 @@ export async function batchIsENSSnipeable(domains) {
         throw new Error("Failed to process ENS domains.");
     }
 }
+
     
 
 
 export function premiumPrice(graceEnd) {
-    const startprice=100000000 //start price is 100 million dollars
-    const premium=startprice*(0.5)**graceEnd;
+    // Get the current timestamp
+    const now = new Date();
+
+    // Convert the graceEnd timestamp to a Date object
+    const graceEndDate = new Date(graceEnd);
+
+    // Calculate the time difference in milliseconds
+    const timeDifference = now - graceEndDate;
+
+    // If the grace period has not ended, return -1 million
+    if (timeDifference < 0) {
+        return -1000000;
+    }
+
+    // Calculate the number of days passed (to the hundredths place)
+    const daysPassed = (timeDifference / (1000 * 60 * 60 * 24)).toFixed(2);
+
+    // Initial price of 100 million dollars
+    const startPrice = 100000000;
+
+    // Calculate the premium price using the given formula
+    const premium = startPrice * (0.5) ** parseFloat(daysPassed);
 
     return premium;
-
 }
 
 export function regPrice(domain, days=30){
@@ -205,17 +253,17 @@ export function regPrice(domain, days=30){
     let price=0;
     switch (true) {
         case length >= 5:
-            price = 5;
+            price = 5/365;
             break;
         case length === 4:
-            price = 160;
+            price = 160/365;
             break;
         case length <= 3:
-            price = 640;
+            price = 640/365;
             break;
 
     }
-    return price/12;
+    return price*days;
 }
 
 
@@ -223,6 +271,7 @@ export function netRegPrice(domain, graceEnd) {
     const netprice=premiumPrice(graceEnd)+regPrice(domain);
     return netprice;
 }
+
 
 
 // convertToEth = async (usd) => {

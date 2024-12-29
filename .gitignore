@@ -8,3 +8,7 @@ npm-debug.log
 
 #domain files
 domains.json
+checked_domains
+category_lists
+domains.json
+outputValid.json
