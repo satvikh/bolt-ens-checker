@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { Network, Alchemy } from 'alchemy-sdk';
 import fs from "fs";
 import dotenv from "dotenv";
-import { loadExistingData, netRegPrice } from '../utils/boltensutils.js';
+import { loadExistingData, netRegPrice, getCsvColumnValues, batchIsENSSnipeable, saveDataToFile } from '../utils/boltensutils.js';
 import { config } from '../../config/config.js';
 
 const tester = [
