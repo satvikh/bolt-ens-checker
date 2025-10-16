@@ -2,7 +2,7 @@
 ![Node.js](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)
 # Bolt ENS Checker
 
-Bolt ENS Checker is a command-line tool designed to verify the availability of Ethereum Name Service (ENS) domain names. It streamlines the process of checking multiple ENS names, making it particularly useful for developers and domain investors.
+Bolt ENS Checker is one of two components in my ENS sniping tool. This module focuses on verifying the availability of Ethereum Name Service (ENS) domain names at scale. By streamlining the process of checking multiple ENS names in real time, it serves as the “scouting” layer of the system, making it particularly useful for developers, domain investors, and arbitrage strategies. The companion component handles transaction execution to secure valuable names once opportunities are identified.
 
 ## Features
 
