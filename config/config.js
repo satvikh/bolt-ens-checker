@@ -1,11 +1,11 @@
 export const config = {
-    outputFile: "./checked_domains/10kclub.json",
+    outputFile: "./checked_domains/Pokemon.json",
 
 
 
     //input settings
-    domainFile:"./category_lists/10kClub.csv",
-    csvColumn: "Number",
+    domainFile:"./category_lists/Pokemon.csv",
+    csvColumn: "Name",
     batchSize: 40,
     maxClean: true,
 
