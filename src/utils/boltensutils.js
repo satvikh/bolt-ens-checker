@@ -203,10 +203,16 @@ export async function batchIsENSSnipeable(domains) {
 
         // Process each batch sequentially with a 1-second timeout
         let results = [];
-        for (const batch of batches) {
+        for (let i = 0; i < batches.length; i++) {
+            const batch = batches[i];
             const batchResults = await processBatch(batch);
             results = results.concat(batchResults);
 
+            // Log completed batch information
+            const startIdx = i * batchSize + 1;
+            const endIdx = Math.min((i + 1) * batchSize, domains.length);
+            console.log(`Completed batch ${i + 1}/${batches.length} — processed domains ${startIdx}-${endIdx} (${batch.length} in this batch)`);
+            console.log('Batch domains:', batch);
             // Introduce a 1-second timeout
             await delay(1000);
         }
