@@ -1,14 +1,11 @@
 node_modules/
 npm-debug.log
 
-
 #env variables
 .env
 
-
 #domain files
 domains.json
-checked_domains
-category_lists
-domains.json
+checked_domains/
+category_lists/
 outputValid.json
