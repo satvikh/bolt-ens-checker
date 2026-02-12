@@ -4,10 +4,7 @@ import { config } from '../../config/config.js';
 
 let monitorInterval = null;
 let isRunning = false;
-<<<<<<< HEAD
-=======
 let allAvailableDomains = []; // Store all domains that are past grace period
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
 
 // Min-heap to store domains, prioritized by the next time to check their price.
 const domainHeap = new TinyQueue([], (a, b) => a.checkAt - b.checkAt);
@@ -19,34 +16,16 @@ const processHeap = () => {
         const currentPrice = netRegPrice(domainInfo.domain, domainInfo.graceEnd);
 
         console.log(
-<<<<<<< HEAD
-            `
----------------------------------
-` +
-            `Domain Available: ${domainInfo.domain}
-` +
-            `---------------------------------
-` +
-            `Registration Price: ~$${currentPrice.toFixed(2)} USD
-` +
-            `Target price was: $${config.autocheck.priceThreshold} USD.` +
-            `
----------------------------------
-`
-=======
             `\n---------------------------------\n` +
             `Domain Available: ${domainInfo.domain}\n` +
             `---------------------------------\n` +
             `Registration Price: ~$${currentPrice.toFixed(2)} USD\n` +
             `Target price was: $${config.autocheck.priceThreshold} USD.` +
             `\n---------------------------------\n`
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
         );
     }
 };
 
-<<<<<<< HEAD
-=======
 const repopulateHeap = () => {
     // Clear the existing heap by popping all items
     while (domainHeap.length) {
@@ -68,7 +47,6 @@ const repopulateHeap = () => {
     console.log(`Heap repopulated. ${domainHeap.length} domains are now scheduled for monitoring.`);
 };
 
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
 export const initialize = async () => {
     try {
         console.log("Initializing monitor...");
@@ -77,56 +55,17 @@ export const initialize = async () => {
         let tempDomains = await getCsvColumnValues(filePath, csvColumn);
 
         let cleanedDomains = tempDomains.map(value => `${value.toLowerCase()}.eth`);
-<<<<<<< HEAD
-        
-=======
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
         console.log(`Loaded ${cleanedDomains.length} domains from ${filePath}.`);
 
         console.log("Fetching initial domain data (this may take a while)...");
         const initialDomainData = await batchIsENSSnipeable(cleanedDomains);
         
-<<<<<<< HEAD
-        const availableDomains = initialDomainData.filter(d => d.snipeable && !d.error);
-        console.log(`Found ${availableDomains.length} domains that are past the grace period.`);
-
-        const priceThreshold = config.autocheck.priceThreshold;
-
-        for (const domain of availableDomains) {
-            if (domain.price <= priceThreshold) {
-                console.log(
-                    `
----------------------------------
-` +
-                    `Domain Available: ${domain.domain}
-` +
-                    `---------------------------------
-` +
-                    `Registration Price: ~$${domain.price.toFixed(2)} USD
-` +
-                    `Target price was: $${config.autocheck.priceThreshold} USD.` +
-                    `
----------------------------------
-`
-                );
-            } else {
-                const checkAt = calculateDateForPrice(domain.graceEnd, priceThreshold);
-                domainHeap.push({
-                    domain: domain.domain,
-                    graceEnd: domain.graceEnd,
-                    checkAt: checkAt,
-                });
-            }
-        }
-        console.log(`Initialization complete. ${domainHeap.length} domains are scheduled for monitoring.`);
-=======
         allAvailableDomains = initialDomainData.filter(d => d.snipeable && !d.error);
         console.log(`Found ${allAvailableDomains.length} domains that are past the grace period.`);
         
         repopulateHeap(); // Initial population of the heap
         
         console.log(`Initialization complete.`);
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
         return true;
     } catch (error) {
         console.error("Error during initialization:", error);
@@ -140,17 +79,11 @@ export const start = () => {
         return;
     }
     console.log("Starting monitor...");
-<<<<<<< HEAD
-    monitorInterval = setInterval(processHeap, 1000);
-    isRunning = true;
-    console.log("Monitor started.");
-=======
     // Use the value from config, with a fallback
     const interval = config.autocheck.interval || 60000;
     monitorInterval = setInterval(processHeap, interval);
     isRunning = true;
     console.log(`Monitor started. Checking every ${interval / 1000} seconds.`);
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
 };
 
 export const stop = () => {
@@ -160,10 +93,7 @@ export const stop = () => {
     }
     console.log("Stopping monitor...");
     clearInterval(monitorInterval);
-<<<<<<< HEAD
-=======
     monitorInterval = null;
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
     isRunning = false;
     console.log("Monitor stopped.");
 };
@@ -172,16 +102,10 @@ export const getStatus = () => {
     if (!isRunning) {
         console.log("Monitor is currently stopped.");
     } else {
-<<<<<<< HEAD
-        console.log("Monitor is running.");
-    }
-    
-=======
         console.log(`Monitor is running. Checking every ${config.autocheck.interval / 1000} seconds.`);
     }
     
     console.log(`Price Threshold: $${config.autocheck.priceThreshold}`);
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
     console.log(`Domains in monitoring queue: ${domainHeap.length}`);
     
     if (domainHeap.length > 0) {
@@ -191,8 +115,6 @@ export const getStatus = () => {
         console.log("No domains in the monitoring queue.");
     }
 };
-<<<<<<< HEAD
-=======
 
 export const listDomains = () => {
     if (domainHeap.length === 0) {
@@ -235,4 +157,3 @@ export const setIntervalValue = (ms) => {
         start();
     }
 };
->>>>>>> c89a993 (feat: Implement interactive CLI manager and core logic refactor)
