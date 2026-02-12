@@ -1,10 +1,10 @@
 export const config = {
-    outputFile: "./checked_domains/10kclub.json",
+    outputFile: "./checked_domains/1kclub.json",
 
 
 
     //input settings
-    domainFile:"./category_lists/10kclub.csv",
+    domainFile:"./category_lists/1kclub.csv",
     csvColumn: "Name",
     batchSize: 40,
     batchDelayMs: 2000, // Delay in milliseconds between batches
