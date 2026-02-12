@@ -1,5 +1,7 @@
 # Bolt ENS Auto-Checker
 
+Bolt ENS Checker is one of two components in my ENS sniping tool. This module focuses on verifying the availability of Ethereum Name Service (ENS) domain names at scale. By streamlining the process of checking multiple ENS names in real time, it serves as the “scouting” layer of the system, making it particularly useful for developers, domain investors, and arbitrage strategies. The companion component handles transaction execution to secure valuable names once opportunities are identified.
+
 Bolt ENS Auto-Checker is an interactive CLI tool designed to monitor recently expired ENS (Ethereum Name Service) domains. It identifies domains that are past their 90-day grace period and tracks their price as it decays from $100 million over a 21-day period, notifying you when a domain's registration price drops to your target threshold.
 
 ## Features
