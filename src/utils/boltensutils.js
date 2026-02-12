@@ -213,8 +213,8 @@ export async function batchIsENSSnipeable(domains) {
             const endIdx = Math.min((i + 1) * batchSize, domains.length);
             console.log(`Completed batch ${i + 1}/${batches.length} — processed domains ${startIdx}-${endIdx} (${batch.length} in this batch)`);
             console.log('Batch domains:', batch);
-            // Introduce a 1-second timeout
-            await delay(1000);
+            // Introduce a configurable timeout
+            await delay(config.batchDelayMs || 1000);
         }
 
         return results;
@@ -228,28 +228,28 @@ export async function batchIsENSSnipeable(domains) {
 
 
 export function premiumPrice(graceEnd) {
-    // Get the current timestamp
+    const PREMIUM_PERIOD_DAYS = 21;
+    const START_PRICE = 100000000;
+    
     const now = new Date();
-
-    // Convert the graceEnd timestamp to a Date object
     const graceEndDate = new Date(graceEnd);
 
-    // Calculate the time difference in milliseconds
     const timeDifference = now - graceEndDate;
 
-    // If the grace period has not ended, return -1 million
+    // If the grace period has not ended, there is no premium.
     if (timeDifference < 0) {
-        return -1000000;
+        return -1000000; // Using a large negative number to indicate not available.
     }
 
-    // Calculate the number of days passed (to the hundredths place)
-    const daysPassed = (timeDifference / (1000 * 60 * 60 * 24)).toFixed(2);
+    const daysPassed = timeDifference / (1000 * 60 * 60 * 24);
 
-    // Initial price of 100 million dollars
-    const startPrice = 100000000;
+    // If the 21-day premium period is over, the premium is $0.
+    if (daysPassed > PREMIUM_PERIOD_DAYS) {
+        return 0;
+    }
 
-    // Calculate the premium price using the given formula
-    const premium = startPrice * (0.5) ** parseFloat(daysPassed);
+    // Calculate the premium price using the exponential decay formula.
+    const premium = START_PRICE * (0.5) ** daysPassed;
 
     return premium;
 }
@@ -276,6 +276,42 @@ export function regPrice(domain, days=30){
 export function netRegPrice(domain, graceEnd) {
     const netprice=premiumPrice(graceEnd)+regPrice(domain);
     return netprice;
+}
+
+export function calculateDateForPrice(graceEnd, targetPrice) {
+    const PREMIUM_PERIOD_DAYS = 21;
+    const START_PRICE = 100000000;
+    const graceEndDate = new Date(graceEnd);
+
+    // If target price is higher than start price, it's available at that price once the grace period ends.
+    if (targetPrice >= START_PRICE) {
+        return graceEndDate;
+    }
+    
+    // Date when the 21-day premium period ends.
+    const premiumEndDate = new Date(graceEndDate.getTime());
+    premiumEndDate.setTime(premiumEndDate.getTime() + (PREMIUM_PERIOD_DAYS * 24 * 60 * 60 * 1000));
+
+    // If target price is $0, it will be available when the premium period ends.
+    if (targetPrice <= 0) {
+        return premiumEndDate;
+    }
+
+    // Calculate how many days it takes for the price to drop to the target.
+    // targetPrice = START_PRICE * (0.5) ^ daysPassed
+    const daysPassed = Math.log(targetPrice / START_PRICE) / Math.log(0.5);
+
+    // If the calculated time is beyond the 21-day premium period, 
+    // the name will become available at its base registration fee at the end of the 21 days.
+    if (daysPassed > PREMIUM_PERIOD_DAYS) {
+        return premiumEndDate;
+    }
+
+    // Calculate the exact future date when the price will hit the target.
+    const futureDate = new Date(graceEndDate.getTime());
+    futureDate.setTime(futureDate.getTime() + (daysPassed * 24 * 60 * 60 * 1000));
+
+    return futureDate;
 }
 
 
